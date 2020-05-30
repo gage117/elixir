@@ -17,7 +17,7 @@ app.use(helmet());
 app.use(cors());
 
 app.get('/games', async (req, res) => {
-  const queryString = 'fields name;limit 50;'
+  const queryString = 'fields name, cover; limit 50;'
   const response = await API.post('/games', queryString)
   res.send(response.data);
 });
