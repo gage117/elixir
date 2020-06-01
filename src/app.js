@@ -33,12 +33,14 @@ app.get('/app-load', async (req, res) => {
 });
 
 app.get('/games', async (req, res) => {
+  //! When changing queryString, make sure to also change the appropriate queryString in the /app-load route
   const queryString = `fields *, cover.url, platforms; limit 25; where platforms !=n & platforms = (${major_platforms.join(',')}) & parent_game = null & total_rating >= 75 & total_rating_count >= 100; sort total_rating desc;`;
   const response = await API.post('/games', queryString);
   res.send(response.data);
 });
 
 app.get('/genres', async (req, res) => {
+  //! When changing queryString, make sure to also change the appropriate queryString in the /app-load route
   const queryString = 'fields *; exclude updated_at , created_at;';
   const response = await API.post('/genres', queryString);
   res.send(response.data);
