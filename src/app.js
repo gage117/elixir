@@ -5,7 +5,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
 const API = require('./api');
-const platform_IDs = require('./platform_IDs');
+const {platform_IDs, major_platforms}  = require('./platform_IDs');
 
 const app = express();
 
@@ -33,7 +33,7 @@ app.get('/app-load', async (req, res) => {
 });
 
 app.get('/games', async (req, res) => {
-  const queryString = 'fields name, cover.url; limit 25;';
+  const queryString = `fields *, platforms; limit 25; where platforms !=n & platforms = (${major_platforms.join(',')});`;
   const response = await API.post('/games', queryString);
   res.send(response.data);
 });
@@ -45,7 +45,7 @@ app.get('/genres', async (req, res) => {
 });
 
 app.get('/platforms', async (req, res) => {
-  const queryString = `fields *; limit 500; where id = (${platform_IDs.join(',')});`;
+  const queryString = `fields *; limit 500; where id = (${IDs.join(',')});`;
   const response = await API.post('/platforms', queryString);
   res.send(response.data);
 });
