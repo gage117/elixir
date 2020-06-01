@@ -21,7 +21,7 @@ app.get('/app-load', async (req, res) => {
   //* Object to assign API response data to and send back in response
   const appData = {};
   //* Get data from /games
-  const queryString = `fields *, cover.url, platforms; limit 25; where platforms !=n & platforms = (${major_platforms.join(',')}) & parent_game = null;`;
+  let queryString = `fields *, cover.url, platforms; limit 25; where platforms !=n & platforms = (${major_platforms.join(',')}) & parent_game = null;`;
   const gamesResponse = await API.post('/games', queryString);
   appData.gameData = gamesResponse.data;
   //* Get data from /genres
