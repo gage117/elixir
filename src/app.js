@@ -33,7 +33,7 @@ app.get('/app-load', async (req, res) => {
 });
 
 app.get('/games', async (req, res) => {
-  const queryString = `fields *, platforms; limit 25; where platforms !=n & platforms = (${major_platforms.join(',')});`;
+  const queryString = `fields *, cover.url, platforms; limit 25; where platforms !=n & platforms = (${major_platforms.join(',')}) & parent_game = null;`;
   const response = await API.post('/games', queryString);
   res.send(response.data);
 });
