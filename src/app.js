@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
 const API = require('./api');
 const {platform_IDs, major_platforms}  = require('./platform_IDs');
+const buildQuery = require('./helpers/queryBuilder');
 
 const app = express();
 
@@ -21,11 +22,26 @@ app.get('/app-load', async (req, res) => {
   //* Object to assign API response data to and send back in response
   const appData = {};
   //* Get data from /games
-  let queryString = `fields *, cover.url, platforms; limit 25; where platforms !=n & platforms = (${major_platforms.join(',')}) & parent_game = null & total_rating >= 75 & total_rating_count >= 100 & id != 1942; sort total_rating desc;`;
+  let queryString = buildQuery({
+    fields: ['*', 'cover.url', 'platforms'],
+    limit: 25,
+    where: [
+      'platforms !=n',
+      `platforms = (${major_platforms.join(',')})`,
+      'parent_game = null', //* Excludes DLCs from response
+      'total_rating >= 75',
+      'total_rating_count >= 100',
+      'id != 1942' //* Prevents second instance of The Witcher 3 in response
+    ],
+    sort: 'total_rating desc'
+  });
   const gamesResponse = await API.post('/games', queryString);
   appData.gameData = gamesResponse.data;
   //* Get data from /genres
-  queryString = 'fields *; exclude updated_at , created_at;';
+  queryString = buildQuery({
+    fields: '*',
+    exclude: ['updated_at', 'created_at']
+  });
   const genresResponse = await API.post('/genres', queryString);
   appData.genreData = genresResponse.data;
 
@@ -34,20 +50,39 @@ app.get('/app-load', async (req, res) => {
 
 app.get('/games', async (req, res) => {
   //! When changing queryString, make sure to also change the appropriate queryString in the /app-load route
-  const queryString = `fields *, cover.url, platforms; limit 25; where platforms !=n & platforms = (${major_platforms.join(',')}) & parent_game = null & total_rating >= 75 & total_rating_count >= 100 & id != 1942; sort total_rating desc;`;
+  const queryString = buildQuery({
+    fields: ['*', 'cover.url', 'platforms'],
+    limit: 25,
+    where: [
+      'platforms !=n',
+      `platforms = (${major_platforms.join(',')})`,
+      'parent_game = null', //* Excludes DLCs from response
+      'total_rating >= 75',
+      'total_rating_count >= 100',
+      'id != 1942' //* Prevents second instance of The Witcher 3 in response
+    ],
+    sort: 'total_rating desc'
+  });
   const response = await API.post('/games', queryString);
   res.send(response.data);
 });
 
 app.get('/genres', async (req, res) => {
   //! When changing queryString, make sure to also change the appropriate queryString in the /app-load route
-  const queryString = 'fields *; exclude updated_at , created_at;';
+  const queryString = buildQuery({
+    fields: '*',
+    exclude: ['updated_at', 'created_at']
+  });
   const response = await API.post('/genres', queryString);
   res.send(response.data);
 });
 
 app.get('/platforms', async (req, res) => {
-  const queryString = `fields *; limit 500; where id = (${IDs.join(',')});`;
+  const queryString = buildQuery({
+    fields: '*',
+    limit: 500,
+    where: `id = (${major_platforms.join(',')})`
+  })
   const response = await API.post('/platforms', queryString);
   res.send(response.data);
 });
