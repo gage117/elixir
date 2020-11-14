@@ -3,8 +3,12 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
-const { NODE_ENV } = require('./config');
+const { NODE_ENV,
+        client_id,
+        client_secret,
+        access_token } = require('./config');
 const API = require('./api');
+const axios = require('axios');
 const {platform_IDs, major_platforms}  = require('./platform_IDs');
 const buildQuery = require('./helpers/queryBuilder');
 
@@ -17,6 +21,36 @@ const morganOption = (NODE_ENV === 'production')
 app.use(morgan(morganOption));
 app.use(helmet());
 app.use(cors());
+
+//Self-executing function to get access token if none is available or current one doesn't work
+(async function testAccessToken(client_id, client_secret, access_token) {
+  if (client_id === 'No client_id found.') throw new Error("Woah there chief, you don't have a client_id!");
+  if (client_secret === 'No client_secret found.') throw new Error("Woah there chief, you don't have a client_secret!");
+
+  try {
+    // responds with object containing access_token and expires_in properties to use API
+    const tokenResponse = await axios.post('https://id.twitch.tv/oauth2/token?' +
+      `client_id=${client_id}&` +
+      `client_secret=${client_secret}&` +
+      `grant_type=client_credentials`
+    ) 
+    let timer = tokenResponse.data.expires_in * 99;
+    // Set access_token in env variables and config
+    process.env.access_token = tokenResponse.data.access_token;
+    access_token = tokenResponse.data.access_token;
+    // set timeout to recursively call the function when timer runs close to expiry
+    setTimeout(() => {
+      testAccessToken(client_id, client_secret, access_token);
+    }, timer);
+    // Log successful execution and variables set.
+    console.log(
+      "access_token set to: " + process.env.access_token +
+      " and expires in " + (timer / 100) + " seconds"
+    );
+  } catch(err) {
+    console.log("access_token request failed:", err);
+  }
+})(client_id, client_secret, access_token);
 
 app.get('/app-load', async (req, res) => {
   //* Object to assign API response data to and send back in response
@@ -35,17 +69,21 @@ app.get('/app-load', async (req, res) => {
     ],
     sort: 'total_rating desc'
   });
-  const gamesResponse = await API.post('/games', queryString);
-  appData.gameData = gamesResponse.data;
-  //* Get data from /genres
-  queryString = buildQuery({
-    fields: '*',
-    exclude: ['updated_at', 'created_at']
-  });
-  const genresResponse = await API.post('/genres', queryString);
-  appData.genreData = genresResponse.data;
+  try {
+    const gamesResponse = await API.post('/games', queryString);
+    appData.gameData = gamesResponse.data;
+    //* Get data from /genres
+    queryString = buildQuery({
+      fields: '*',
+      exclude: ['updated_at', 'created_at']
+    });
+    const genresResponse = await API.post('/genres', queryString);
+    appData.genreData = genresResponse.data;
 
-  res.send(appData);
+    res.send(appData);
+  } catch(err) {
+    console.log("YEEHAW", err.response.status, err.response.data);
+  }
 });
 
 app.get('/games', async (req, res) => {

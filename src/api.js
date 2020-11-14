@@ -1,8 +1,13 @@
 const axios = require('axios');
+const { client_id,
+        access_token } = require('./config');
 
 const API = axios.create({
-	baseURL: 'https://api-v3.igdb.com/',
-	headers: {'user-key': 'bb2aedca0775a449624cae062ea21d0f'}
+	baseURL: 'https://api.igdb.com/v4',
+	headers: {
+		'Client-ID': client_id,
+		'Authorization': access_token
+	}
 })
 
 module.exports = API;
