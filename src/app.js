@@ -33,7 +33,8 @@ app.use(cors());
       `client_id=${client_id}&` +
       `client_secret=${client_secret}&` +
       `grant_type=client_credentials`
-    ) 
+    );
+    // Set expires_in seconds to milliseconds with some headroom
     let timer = tokenResponse.data.expires_in * 99;
     // Set access_token in env variables and config
     process.env.access_token = tokenResponse.data.access_token;
