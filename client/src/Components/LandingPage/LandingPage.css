@@ -1,0 +1,10 @@
+.landingContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+@media screen and (min-width: 720px) {
+    .landingContainer {
+        flex-direction: row;
+    }
+}
