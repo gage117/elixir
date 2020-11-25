@@ -1,4 +1,4 @@
-# Express Boilerplate!
+# Elixir React Client and Node Server
 
 This is a boilerplate project used for starting new projects!
 
