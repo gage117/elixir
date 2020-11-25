@@ -43,6 +43,7 @@ app.use(cors());
     setTimeout(() => {
       testAccessToken(client_id, client_secret, access_token);
     }, timer);
+    API.defaults.headers['Authorization'] = `Bearer ${access_token}`;
     // Log successful execution and variables set.
     console.log(
       "access_token set to: " + process.env.access_token +
@@ -83,7 +84,7 @@ app.get('/app-load', async (req, res) => {
 
     res.send(appData);
   } catch(err) {
-    console.log("YEEHAW", err.response.status, err.response.data);
+    console.log("YEEHAW", err.response);
   }
 });
 
