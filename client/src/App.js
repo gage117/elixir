@@ -12,10 +12,15 @@ class App extends React.Component {
 
   async componentDidMount() {
     this.context.clearError()
-    const res = await API.get('/app-load')
-    .catch(e => this.context.setError(e.message))
-    this.context.setGames(res.data.gameData)
-    this.context.setGenres(res.data.genreData)
+    try {
+      const res = await API.appLoad
+      this.context.setGames(res.data.gameData)
+      this.context.setGenres(res.data.genreData)
+    }
+    catch(e) {
+      console.log("WOAH! Api fetch call error bro!")
+      this.context.setError(e.message)
+    }
   }
 
   render() {
