@@ -12,22 +12,6 @@ const API = require('./api');
 const axios = require('axios');
 const routes = require("./routes");
 
-const app = express();
-
-const morganOption = (NODE_ENV === 'production')
-  ? 'tiny'
-  : 'common';
-
-app.use(morgan(morganOption));
-app.use(helmet());
-app.use(cors());
-
-// Serve up static assets
-if (process.env.NODE_ENV === "production") {
-  console.log("PRODUCTION");
-  console.log(path.join(__dirname, "..", "client", "build"));
-  app.use(express.static(path.join(__dirname, "..", "client", "build")));
-}
 
 //Self-executing function to get access token if none is available or current one doesn't work
 (async function testAccessToken(client_id, client_secret, access_token) {
@@ -60,6 +44,21 @@ if (process.env.NODE_ENV === "production") {
     console.log("access_token request failed:", err);
   }
 })(client_id, client_secret, access_token);
+
+const app = express();
+
+// Middleware
+const morganOption = (NODE_ENV === 'production')
+  ? 'tiny'
+  : 'common';
+app.use(morgan(morganOption));
+app.use(helmet());
+app.use(cors());
+
+// Serve up static assets
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "..", "client", "build")));
+}
 
 app.use(routes);
 
